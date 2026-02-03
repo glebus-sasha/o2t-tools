@@ -1,0 +1,59 @@
+---
+title: "compute"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(stringr)
+```
+
+
+```{r}
+data_path <- 'C:/projects/o2t-tools/data/drug_prioritization/drug_prioritization/drugstone/phenotype_comparison.string.human_links_v12_0_min900.Ensembl.diamond.trustrank.csv'
+truth_path <- 'C:/projects/o2t-tools/data/drug_prioritization/drug_prioritization/drugstone/truth.csv'
+out_prefix <- 'C:/projects/o2t-tools/results'
+```
+
+```{r}
+data <- read.csv(data_path) %>% 
+  arrange(-score) %>% 
+  select(drug = X) %>% 
+  head(10) %>% 
+  mutate(drug = str_trim(drug))
+truth <- read.csv(truth_path, header = FALSE, col.names = 'drug') %>% 
+  mutate(drug = str_trim(drug))
+```
+
+```{r}
+matched_drugs <- inner_join(
+  data,
+  truth,
+  by = "drug"
+)
+```
+
+```{r}
+n_matched <- nrow(matched_drugs)
+n_matched
+```
+```{r}
+write.csv(
+  matched_drugs,
+  file = file.path(out_prefix, "matched_drugs.csv"),
+  row.names = FALSE
+)
+```
+
+
+```{r}
+write.csv(
+  data.frame(n_matched = n_matched),
+  file = file.path(out_prefix, "matched_count.csv"),
+  row.names = FALSE
+)
+```
+
+
+
+
