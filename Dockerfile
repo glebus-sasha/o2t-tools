@@ -12,8 +12,5 @@ RUN chmod +x /usr/local/bin/*.R
 # Алиасы без .R
 RUN for f in /usr/local/bin/*.R; do ln -s "$f" "${f%.R}"; done
 
-# Рабочая директория (удобно для volume)
-WORKDIR /work
-
 # По умолчанию — интерактивный shell
 ENTRYPOINT ["/bin/bash"]
