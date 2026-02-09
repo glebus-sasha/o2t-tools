@@ -6,26 +6,26 @@ suppressPackageStartupMessages({
   library(readr)
 })
 
-# data_path <- 'C:/projects/o2t-tools/data/drug_prioritization/drug_prioritization/drugstone/phenotype_comparison.string.human_links_v12_0_min900.Ensembl.diamond.trustrank.csv'
-# truth_path <- 'C:/projects/o2t-tools/data/drug_prioritization/drug_prioritization/drugstone/truth.csv'
-# out_prefix <- 'C:/projects/o2t-tools/results'
-# top_n      <- 10
+data_path <- 'C:/projects/o2t-tools/data/phenotype_comparison_string_human_links_v12_0_min900_Ensembl_diamond.tsv'
+truth_path <- 'C:/projects/o2t-tools/data/drug_prioritization/drug_prioritization/drugstone/truth.csv'
+out_prefix <- 'C:/projects/o2t-tools/results'
+top_n      <- 10
 
-args <- commandArgs(trailingOnly = TRUE)
-
-if (length(args) != 4) {
-  stop(
-    "Usage:\n",
-    "Rscript compute_matches.R <data_path> <truth_path> <out_prefix> <top_n>\n\n",
-    "Example:\n",
-    "Rscript compute_matches.R data.csv truth.csv results 10"
-  )
-}
-
-data_path  <- args[1]
-truth_path <- args[2]
-out_prefix <- args[3]
-top_n      <- as.integer(args[4])
+# args <- commandArgs(trailingOnly = TRUE)
+# 
+# if (length(args) != 4) {
+#   stop(
+#     "Usage:\n",
+#     "Rscript compute_matches.R <data_path> <truth_path> <out_prefix> <top_n>\n\n",
+#     "Example:\n",
+#     "Rscript compute_matches.R data.csv truth.csv results 10"
+#   )
+# }
+# 
+# data_path  <- args[1]
+# truth_path <- args[2]
+# out_prefix <- args[3]
+# top_n      <- as.integer(args[4])
 
 if (is.na(top_n) || top_n <= 0) {
   stop("top_n must be a positive integer")
@@ -37,9 +37,11 @@ if (!dir.exists(out_prefix)) {
 }
 
 # --- read & preprocess data ---
-data <- read.csv(data_path) %>%
+data <- read_delim(data_path, 
+                   delim = "\t", escape_double = FALSE, 
+                   trim_ws = TRUE) %>%
   arrange(desc(score)) %>%
-  select(drug = X) %>%
+  select(drug = drugName) %>%
   head(top_n) %>%
   mutate(drug = str_trim(drug))
 
