@@ -1,0 +1,21 @@
+---
+title: "volcano"
+format: html
+---
+
+```{r}
+#| message: false
+#| warning: false
+library(dplyr)
+library(DESeq2)
+```
+
+
+```{r}
+data_path <- 'C:/projects/o2t-tools/data/phenotype_comparison.dds.rld.rds'
+```
+
+```{r}
+readRDS(data_path)
+```
+
