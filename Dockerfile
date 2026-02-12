@@ -1,14 +1,17 @@
 FROM rocker/tidyverse:latest
 
-# Системные зависимости для пакетов R
+# Системные зависимости
 RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     libxml2-dev \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Устанавливаем нужные пакеты R
-RUN R -e "install.packages(c('dplyr', 'stringr', 'readr', 'ggplot2', 'plotly', 'EnhancedVolcano', 'htmlwidgets'), repos='https://cloud.r-project.org')"
+# Устанавливаем пакеты CRAN
+RUN R -e "install.packages(c('dplyr', 'stringr', 'readr', 'ggplot2', 'plotly', 'htmlwidgets'), repos='https://cloud.r-project.org')"
+
+# Устанавливаем Bioconductor и EnhancedVolcano
+RUN R -e "if (!requireNamespace('BiocManager', quietly=TRUE)) install.packages('BiocManager', repos='https://cloud.r-project.org'); BiocManager::install('EnhancedVolcano', update=FALSE, ask=FALSE)"
 
 # Копируем R-скрипты
 COPY scripts/ /usr/local/bin/
