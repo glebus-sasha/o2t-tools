@@ -47,7 +47,7 @@ if (length(missing_cols) > 0) {
 # -------------------------
 # Создание статического Volcano Plot
 # -------------------------
-png_file <- paste0(out_prefix, "volcano.png")
+png_file <- paste0(out_prefix, "volcano.png", sep = "_")
 
 p <- EnhancedVolcano(
   data,
@@ -67,7 +67,7 @@ cat("Saved static volcano plot:", png_file, "\n")
 # -------------------------
 # Создание интерактивного Plotly Volcano
 # -------------------------
-html_file <- paste0(out_prefix, "volcano.html")
+html_file <- paste0(out_prefix, "volcano.html", sep = "_")
 
 # Подготовка данных для plotly
 data$gene <- rownames(data)

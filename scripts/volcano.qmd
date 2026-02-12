@@ -7,15 +7,32 @@ format: html
 #| message: false
 #| warning: false
 library(dplyr)
+library(readr)
 library(DESeq2)
+library(plotly)
+library(EnhancedVolcano)
 ```
 
 
 ```{r}
-data_path <- 'C:/projects/o2t-tools/data/phenotype_comparison.dds.rld.rds'
+data_path <- '../data/phenotype_comparison.deseq2.results.tsv'
 ```
 
 ```{r}
-readRDS(data_path)
+data <- read_table(data_path)
 ```
+
+```{r}
+p <- EnhancedVolcano(data,
+    lab = rownames(data),
+    x = 'log2FoldChange',
+    y = 'padj',
+    pCutoff = 0.05,
+    FCcutoff = 1,
+    pointSize = 2.0,
+    labSize = 3.0)
+
+ggplotly(p)
+```
+
 
