@@ -33,7 +33,8 @@ tx2gene <- read_delim(tx2gene_path, delim = "\t", escape_double = FALSE, trim_ws
 
 # --- join gene names ---
 res_with_names <- deseq2_results %>%
-  left_join(tx2gene, by = "gene_id")
+  left_join(tx2gene, by = "gene_id") %>% 
+  select(gene_id, gene_name, everything())
 
 # --- write output ---
 out_file <- paste0(out_prefix, "_gene_names_added.tsv")

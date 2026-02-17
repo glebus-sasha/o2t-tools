@@ -14,23 +14,24 @@ suppressPackageStartupMessages({
 # -------------------------
 args <- commandArgs(trailingOnly = TRUE)
 
-if (length(args) < 2 || length(args) > 4) {
+if (length(args) < 2 || length(args) > 5) {
   stop(
     "Usage:\n",
-    "Rscript volcano_plot.R <data_path> <out_prefix> [pCutoff] [FCcutoff]\n\n",
+    "Rscript volcano_plot.R <data_path> <out_prefix> [pCutoff] [FCcutoff] [name_col]\n\n",
     "Example:\n",
-    "Rscript volcano_plot.R data.tsv volcano_ 0.05 1"
+    "Rscript volcano_plot.R data.tsv volcano_ 0.05 1 gene_name"
   )
 }
 
 data_path  <- args[1]
 out_prefix <- args[2]
 pCutoff    <- ifelse(length(args) >= 3, as.numeric(args[3]), 0.05)
-FCcutoff   <- ifelse(length(args) == 4, as.numeric(args[4]), 1)
+FCcutoff   <- ifelse(length(args) >= 4, as.numeric(args[4]), 1)
+name_col   <- ifelse(length(args) == 5, args[5], NA)
 
 # data_path <- 'data/phenotype_comparison.deseq2.results.tsv'
 # out_prefix <- 'rez'
-
+# name_col <- 'gene_id'
 
 # -------------------------
 # Чтение данных
@@ -45,13 +46,26 @@ if (length(missing_cols) > 0) {
 }
 
 # -------------------------
+# Определяем колонку для подписей генов
+# -------------------------
+if (!is.na(name_col) && name_col %in% colnames(data)) {
+  data$gene <- data[[name_col]]
+} else {
+  # fallback на rownames
+  data$gene <- rownames(data)
+  if (!is.na(name_col)) {
+    warning("Column '", name_col, "' not found. Using rownames as gene labels.")
+  }
+}
+
+# -------------------------
 # Создание статического Volcano Plot
 # -------------------------
 png_file <- paste0(out_prefix, "_volcano.png")
 
 p <- EnhancedVolcano(
   data,
-  lab = rownames(data),
+  lab = data$gene,
   x = 'log2FoldChange',
   y = 'padj',
   pCutoff = pCutoff,
@@ -70,7 +84,6 @@ cat("Saved static volcano plot:", png_file, "\n")
 html_file <- paste0(out_prefix, "_volcano.html")
 
 # Подготовка данных для plotly
-data$gene <- rownames(data)
 data$significant <- "NS"
 data$significant[data$padj < pCutoff & data$log2FoldChange > FCcutoff] <- "Up"
 data$significant[data$padj < pCutoff & data$log2FoldChange < -FCcutoff] <- "Down"
