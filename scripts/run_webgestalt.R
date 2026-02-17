@@ -8,19 +8,33 @@ suppressPackageStartupMessages({
   library(stringr)
 })
 
-# ---- define CLI options ----
-option_list <- list(
-  make_option("--input", type="character", help="Input file path"),
-  make_option("--method", type="character", help="ORA or GSEA"),
-  make_option("--organism", type="character", default="hsapiens", help="Organism"),
-  make_option("--id_space", type="character", help="ensembl or symbol"),
-  make_option("--databases", type="character", help="Comma-separated databases"),
-  make_option("--output", type="character", default="webgestalt_out", help="Output directory"),
-  make_option("--threads", type="integer", default=1, help="Number of threads for parallel processing")
-)
+# ---- DEBUG / DEV PARAMETERS (uncomment for testing) ----
+if (FALSE) {
+  opt <- list(
+    input = "data/phenotype_comparison_gene_names_added_genes.txt",
+    method = "ORA",
+    organism = "hsapiens",
+    id_space = "ensembl",
+    databases = "pathway_KEGG,pathway_REACTOME",
+    output = "webgestalt_debug",
+    threads = 2
+  )
+}
 
-opt_parser <- OptionParser(option_list=option_list)
-opt <- parse_args(opt_parser)
+# ---- define CLI options ----
+if (!exists("opt")) {  # only parse CLI if opt not defined above
+  option_list <- list(
+    make_option("--input", type="character", help="Input file path"),
+    make_option("--method", type="character", help="ORA or GSEA"),
+    make_option("--organism", type="character", default="hsapiens", help="Organism"),
+    make_option("--id_space", type="character", help="ensembl or symbol"),
+    make_option("--databases", type="character", help="Comma-separated databases"),
+    make_option("--output", type="character", default="webgestalt_out", help="Output directory"),
+    make_option("--threads", type="integer", default=1, help="Number of threads for parallel processing")
+  )
+  opt_parser <- OptionParser(option_list=option_list)
+  opt <- parse_args(opt_parser)
+}
 
 # ---- log inputs ----
 cat("Input parameters:\n")
@@ -30,6 +44,7 @@ print(opt)
 required_args <- c("input", "method", "id_space", "databases")
 missing_args <- required_args[!required_args %in% names(opt) | sapply(opt[required_args], is.null)]
 if (length(missing_args) > 0) {
+  if (!exists("opt_parser")) opt_parser <- NULL
   print_help(opt_parser)
   stop("Missing required arguments: ", paste(missing_args, collapse = ", "), "\n")
 }
@@ -90,7 +105,8 @@ WebGestaltR(
   referenceSet = "genome_protein-coding",
   isOutput = TRUE,
   outputDirectory = opt$output,
-  nThreads = opt$threads
+  nThreads = opt$threads,
+  isParallel = TRUE
 )
 
 cat("WebGestaltR analysis finished. Output directory:", opt$output, "\n")
