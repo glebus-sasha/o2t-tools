@@ -15,7 +15,8 @@ option_list <- list(
   make_option("--organism", type="character", default="hsapiens", help="Organism"),
   make_option("--id_space", type="character", help="ensembl or symbol"),
   make_option("--databases", type="character", help="Comma-separated databases"),
-  make_option("--output", type="character", default="webgestalt_out", help="Output directory")
+  make_option("--output", type="character", default="webgestalt_out", help="Output directory"),
+  make_option("--threads", type="integer", default=1, help="Number of threads for parallel processing")
 )
 
 opt_parser <- OptionParser(option_list=option_list)
@@ -57,13 +58,23 @@ if (tolower(opt$method) == "gsea") {
   interest_input <- data %>%
     filter(!is.na(pvalue)) %>%
     mutate(rank_metric = sign(log2FoldChange) * -log10(pvalue)) %>%
-    select(interestColumn, rank_metric) %>%
+    select(all_of(interestColumn), rank_metric) %>%
     distinct() %>%
     arrange(desc(rank_metric))
   
+  # ---- remove ENSEMBL version if needed ----
+  if (id_space_clean == "ensembl") {
+    interest_input[[interestColumn]] <- sub("\\..*$", "", interest_input[[interestColumn]])
+  }
+  
 } else if (tolower(opt$method) == "ora") {
   
-  interest_input <- data %>% unique() %>% str_trim()
+  interest_input <- data %>% distinct() %>% str_trim()
+  
+  # ---- remove ENSEMBL version if needed ----
+  if (id_space_clean == "ensembl") {
+    interest_input[[interestColumn]] <- sub("\\..*$", "", interest_input[[interestColumn]])
+  }
   
 } else {
   stop("method must be ORA or GSEA, got: ", opt$method)
@@ -78,7 +89,8 @@ WebGestaltR(
   interestGeneType = interestGeneType,
   referenceSet = "genome_protein-coding",
   isOutput = TRUE,
-  outputDirectory = opt$output
+  outputDirectory = opt$output,
+  nThreads = opt$threads
 )
 
 cat("WebGestaltR analysis finished. Output directory:", opt$output, "\n")
