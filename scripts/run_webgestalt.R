@@ -9,20 +9,22 @@ suppressPackageStartupMessages({
 })
 
 # ---- DEBUG / DEV PARAMETERS (uncomment for testing) ----
-if (FALSE) {
-  opt <- list(
-    input = "data/phenotype_comparison_gene_names_added_genes.txt",
-    method = "ORA",
-    organism = "hsapiens",
-    id_space = "symbol",
-    databases = "pathway_KEGG,pathway_REACTOME",
-    output = "webgestalt_debug",
-    threads = 2
-  )
-}
+# if (TRUE) {
+#   opt <- list(
+#     #input = "data/phenotype_comparison_gene_names_added_genes.txt",
+#     #method = "ORA",
+#     input = "data/phenotype_comparison_gene_names_added_filtered.tsv",
+#     method = "GSEA",
+#     organism = "hsapiens",
+#     id_space = "ensembl",
+#     databases = "pathway_KEGG,pathway_REACTOME",
+#     output = ".",
+#     threads = 2
+#   )
+# }
 
 # ---- define CLI options ----
-if (!exists("opt")) {  # only parse CLI if opt not defined above
+if (!exists("opt")) {
   option_list <- list(
     make_option("--input", type="character", help="Input file path"),
     make_option("--method", type="character", help="ORA or GSEA"),
@@ -60,14 +62,13 @@ interestColumn <- ifelse(id_space_clean == "symbol", "gene_name", "gene_id")
 # ---- process databases ----
 enrich_db <- strsplit(opt$databases, ",")[[1]] %>% str_trim()
 
-# ---- read input file ----
-data <- read_delim(opt$input, delim="\t", escape_double = FALSE, trim_ws = TRUE)
-
-# ---- prepare data depending on method ----
+# ---- read input and prepare data ----
 if (tolower(opt$method) == "gsea") {
   
-  if (!all(c("log2FoldChange", "pvalue") %in% colnames(data))) {
-    stop("For GSEA, input file must contain 'log2FoldChange' and 'pvalue' columns")
+  data <- read_delim(opt$input, delim = "\t", escape_double = FALSE, trim_ws = TRUE)
+  
+  if (!all(c(interestColumn, "log2FoldChange", "pvalue") %in% colnames(data))) {
+    stop("For GSEA, input must contain columns: ", interestColumn, ", log2FoldChange, pvalue")
   }
   
   interest_input <- data %>%
@@ -77,18 +78,23 @@ if (tolower(opt$method) == "gsea") {
     distinct() %>%
     arrange(desc(rank_metric))
   
-  # ---- remove ENSEMBL version if needed ----
   if (id_space_clean == "ensembl") {
     interest_input[[interestColumn]] <- sub("\\..*$", "", interest_input[[interestColumn]])
   }
   
 } else if (tolower(opt$method) == "ora") {
   
-  interest_input <- data %>% distinct() %>% str_trim()
+  # ORA: читаем только первый столбец, без имени
+  data <- read_delim(opt$input, delim = "\t", col_names = FALSE, escape_double = FALSE, trim_ws = TRUE)
   
-  # ---- remove ENSEMBL version if needed ----
+  interest_input <- data %>%
+    mutate(X1 = as.character(X1)) %>%
+    distinct() %>%
+    pull(X1) %>%
+    str_trim()
+  
   if (id_space_clean == "ensembl") {
-    interest_input[[interestColumn]] <- sub("\\..*$", "", interest_input[[interestColumn]])
+    interest_input <- sub("\\..*$", "", interest_input)
   }
   
 } else {
