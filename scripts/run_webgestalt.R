@@ -56,13 +56,13 @@ if (tolower(opt$method) == "gsea") {
   interest_input <- data %>%
     filter(!is.na(pvalue)) %>%
     mutate(rank_metric = sign(log2FoldChange) * -log10(pvalue)) %>%
-    select(1, rank_metric) %>%
+    select(interestGeneType, rank_metric) %>%
     distinct() %>%
     arrange(desc(rank_metric))
   
 } else if (tolower(opt$method) == "ora") {
   
-  interest_input <- data[[1]]  # ORA: просто вектор генов
+  interest_input <- data[interestGeneType]  # ORA: просто вектор генов
   
 } else {
   stop("method must be ORA or GSEA, got: ", opt$method)
