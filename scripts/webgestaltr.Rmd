@@ -1,0 +1,26 @@
+---
+title: "webgestaltr"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+library(WebGestaltR)
+```
+
+```{r}
+
+genes <- c("TP53", "BRCA1", "EGFR", "MYC", "PTEN")
+
+WebGestaltR(
+  organism = "hsapiens",
+  enrichMethod = "ORA",
+  enrichDatabase = c("pathway_KEGG", "pathway_Reactome", "geneontology_Biological_Process"),
+  interestGene = genes,
+  interestGeneType = "genesymbol",
+  referenceSet = "genome_protein-coding",
+  isOutput = TRUE,
+  outputDirectory = "."
+)
+
+```
+

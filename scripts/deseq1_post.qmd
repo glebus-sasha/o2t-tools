@@ -1,0 +1,32 @@
+---
+title: "deseq1_post"
+format: html
+---
+
+```{r}
+#| message: false
+#| warning: false
+library(dplyr)
+library(readr)
+```
+
+
+```{r}
+file_path <- '../data/deseq2_differential/phenotype_comparison.deseq2.results.tsv'
+tx2gene_path <- '../data/tx2gene.tsv'
+```
+
+```{r}
+file <- read_table(file_path)
+tx2gene <- read_table(tx2gene_path) %>% 
+  select(gene_id, gene_name) %>%
+  distinct()
+```
+
+
+```{r}
+res_with_names <- file %>%
+  left_join(tx2gene, by = "gene_id")
+```
+
+
