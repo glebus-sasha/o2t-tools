@@ -5,21 +5,38 @@ output: html_document
 
 ```{r message=FALSE, warning=FALSE}
 library(WebGestaltR)
+library(dplyr)
+library(readr)
 ```
 
 ```{r}
+data_path <- '../data/phenotype_comparison_gene_names_added_filtered.tsv'
+```
 
-genes <- c("TP53", "BRCA1", "EGFR", "MYC", "PTEN")
+```{r}
+data <- read_table(data_path)
+```
+```{r}
+gsea_data <- data %>%
+  filter(!is.na(pvalue)) %>%
+  mutate(rank_metric = sign(log2FoldChange) * -log10(pvalue)) %>%
+  select(gene_name, rank_metric) %>%
+  distinct() %>%
+  arrange(desc(rank_metric)) %>% 
+  head(10)
+```
 
+
+```{r}
 WebGestaltR(
   organism = "hsapiens",
-  enrichMethod = "ORA",
-  enrichDatabase = c("pathway_KEGG", "pathway_Reactome", "geneontology_Biological_Process"),
-  interestGene = genes,
+  enrichMethod = "GSEA",
+  enrichDatabase = c("pathway_KEGG",
+                     "pathway_Reactome",
+                     "geneontology_Biological_Process"),
+  interestGene = gsea_data,
   interestGeneType = "genesymbol",
-  referenceSet = "genome_protein-coding",
-  isOutput = TRUE,
-  outputDirectory = "."
+  referenceSet = "genome_protein-coding"
 )
 
 ```

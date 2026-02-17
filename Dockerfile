@@ -7,11 +7,11 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Устанавливаем пакеты CRAN
-RUN R -e "install.packages(c('dplyr', 'stringr', 'readr', 'ggplot2', 'plotly', 'htmlwidgets'), repos='https://cloud.r-project.org')"
+# --- CRAN пакеты ---
+RUN R -e "install.packages(c('dplyr', 'stringr', 'readr', 'ggplot2', 'plotly', 'htmlwidgets', 'optparse'), repos='https://cloud.r-project.org')"
 
-# Устанавливаем Bioconductor и EnhancedVolcano
-RUN R -e "if (!requireNamespace('BiocManager', quietly=TRUE)) install.packages('BiocManager', repos='https://cloud.r-project.org'); BiocManager::install('EnhancedVolcano', update=FALSE, ask=FALSE)"
+# --- Bioconductor пакеты ---
+RUN R -e "if (!requireNamespace('BiocManager', quietly=TRUE)) install.packages('BiocManager', repos='https://cloud.r-project.org'); BiocManager::install(c('EnhancedVolcano','WebGestaltR'), update=FALSE, ask=FALSE)"
 
 # Копируем R-скрипты
 COPY scripts/ /usr/local/bin/
