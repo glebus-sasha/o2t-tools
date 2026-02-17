@@ -63,7 +63,7 @@ if (tolower(opt$method) == "gsea") {
   
 } else if (tolower(opt$method) == "ora") {
   
-  interest_input <- data[interestColumn]  # ORA: просто вектор генов
+  interest_input <- data %>% unique() %>% str_trim()
   
 } else {
   stop("method must be ORA or GSEA, got: ", opt$method)
