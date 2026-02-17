@@ -14,7 +14,7 @@ if (FALSE) {
     input = "data/phenotype_comparison_gene_names_added_genes.txt",
     method = "ORA",
     organism = "hsapiens",
-    id_space = "ensembl",
+    id_space = "symbol",
     databases = "pathway_KEGG,pathway_REACTOME",
     output = "webgestalt_debug",
     threads = 2
