@@ -9,12 +9,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # --- CRAN пакеты ---
-RUN R -e "install.packages(c('dplyr', 'stringr', 'readr', 'ggplot2', 'plotly', 'htmlwidgets', 'optparse'), repos='https://cloud.r-project.org')"
+RUN R -e "install.packages(c('dplyr', 'stringr', 'readr', 'ggplot2', 'plotly', 'htmlwidgets', 'optparse', 'RobustRankAggreg', 'tidyr'), repos='https://cloud.r-project.org')"
 
 # --- Bioconductor пакеты ---
 RUN R -e "if (!requireNamespace('BiocManager', quietly=TRUE)) install.packages('BiocManager', repos='https://cloud.r-project.org'); BiocManager::install(c('EnhancedVolcano','WebGestaltR'), update=FALSE, ask=FALSE)"
 
-# --- Копируем R-скрипты (включая ваш WebGestaltR CLI скрипт) ---
+# --- Копируем R-скрипты (включая новый rank aggregation скрипт) ---
 COPY scripts/ /usr/local/bin/
 
 # --- Делаем их исполняемыми ---

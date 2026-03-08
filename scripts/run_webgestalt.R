@@ -9,19 +9,19 @@ suppressPackageStartupMessages({
 })
 
 # ---- DEBUG / DEV PARAMETERS (uncomment for testing) ----
-# if (TRUE) {
-#   opt <- list(
-#     #input = "data/phenotype_comparison_gene_names_added_genes.txt",
-#     #method = "ORA",
-#     input = "data/phenotype_comparison_gene_names_added_filtered.tsv",
-#     method = "GSEA",
-#     organism = "hsapiens",
-#     id_space = "ensembl",
-#     databases = "pathway_KEGG,pathway_REACTOME",
-#     output = ".",
-#     threads = 2
-#   )
-# }
+if (TRUE) {
+  opt <- list(
+    #input = "data/phenotype_comparison_gene_names_added_genes.txt",
+    #method = "ORA",
+    input = "data/phenotype_comparison_gene_names_added_filtered.tsv",
+    method = "GSEA",
+    organism = "hsapiens",
+    id_space = "ensembl",
+    databases = "pathway_KEGG,pathway_REACTOME",
+    output = "results",
+    threads = 2
+  )
+}
 
 # ---- define CLI options ----
 if (!exists("opt")) {

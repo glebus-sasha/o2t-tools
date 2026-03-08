@@ -1,0 +1,83 @@
+---
+title: "drug_range"
+format: html
+---
+
+```{r}
+#| message: false
+#| warning: false
+library(dplyr)
+library(stringr) 
+library(RobustRankAggreg)
+```
+
+```{r}
+diamond_path <- 'C:/projects/o2t-tools/data/drug_prioritization/drug_prioritization/drugstone/phenotype_comparison.string.human_links_v12_0_min900.Ensembl.diamond.trustrank.csv'
+domino_path <- 'C:/projects/o2t-tools/data/drug_prioritization/drug_prioritization/drugstone/phenotype_comparison.string.human_links_v12_0_min900.Ensembl.domino.trustrank.csv'
+```
+
+```{r}
+diamond <- read.csv(diamond_path)
+domino  <- read.csv(domino_path)
+
+safe_max <- function(x) {
+  if (all(is.na(x))) NA_real_ else max(x, na.rm = TRUE)
+}
+
+combined <- full_join(diamond, domino, by = "drugId", suffix = c("_diamond", "_domino")) %>% 
+  group_by(drugId) %>%
+  summarise(
+    X = coalesce(first(X_diamond), first(X_domino)),
+    score_diamond = safe_max(score_diamond),
+    score_domino  = safe_max(score_domino),
+    status = coalesce(first(status_diamond), first(status_domino)),
+    hasEdgesTo_diamond = first(hasEdgesTo_diamond),
+    hasEdgesTo_domino  = first(hasEdgesTo_domino),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    score_mean = rowMeans(cbind(score_diamond, score_domino), na.rm = TRUE),
+    score_max  = pmax(score_diamond, score_domino, na.rm = TRUE),
+    score_geom = sqrt(score_diamond * score_domino),
+    n_methods = (!is.na(score_diamond)) + (!is.na(score_domino))
+  ) %>%
+  mutate(
+    rank_diamond = rank(-score_diamond, na.last = "keep", ties.method = "average"),
+    rank_domino  = rank(-score_domino,  na.last = "keep", ties.method = "average")
+  )
+
+max_rank <- max(c(combined$rank_diamond, combined$rank_domino), na.rm = TRUE)
+
+combined <- combined %>%
+  mutate(
+    rank_diamond = ifelse(is.na(rank_diamond), max_rank + 1, rank_diamond),
+    rank_domino  = ifelse(is.na(rank_domino),  max_rank + 1, rank_domino),
+    mean_rank = rowMeans(cbind(rank_diamond, rank_domino)),
+    median_rank = apply(cbind(rank_diamond, rank_domino), 1, median),
+    borda_score = (max_rank - rank_diamond + 1) +
+                  (max_rank - rank_domino + 1)
+  )
+
+rank_lists <- list(
+  diamond = combined %>% arrange(rank_diamond) %>% pull(X),
+  domino  = combined %>% arrange(rank_domino)  %>% pull(X)
+)
+
+rra <- aggregateRanks(rank_lists)
+
+combined <- combined %>%
+  left_join(rra, by = c("X" = "Name")) %>%
+  rename(rra_score = Score) %>%
+  mutate(
+    consensus_score =
+      as.numeric(scale(borda_score)) +
+      as.numeric(scale(n_methods)) -
+      as.numeric(scale(mean_rank))
+  )
+
+final_ranking <- combined %>%
+  arrange(desc(consensus_score))
+```
+
+
+
