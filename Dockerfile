@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 # --- CRAN пакеты ---
 RUN R -e "install.packages(c(
         'dplyr', 'stringr', 'readr', 'ggplot2', 'plotly', 
-        'htmlwidgets', 'optparse', 'RobustRankAggreg'
+        'htmlwidgets', 'optparse'
       ), repos='https://cloud.r-project.org')"
 
 # --- Bioconductor пакеты ---
