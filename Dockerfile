@@ -1,4 +1,4 @@
-FROM rocker/tidyverse:latest
+FROM rocker/r-ver:4.3.2
 
 # --- Системные зависимости ---
 RUN apt-get update && apt-get install -y \
