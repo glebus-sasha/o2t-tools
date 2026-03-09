@@ -5,9 +5,9 @@ suppressPackageStartupMessages({
   library(stringr)
   library(readr)
   library(RobustRankAggreg)
+  library(tidyr)
 })
 
-# Rscript drug_range.R --input "/c/projects/o2t-tools/data/drug_prioritization/drug_prioritization/drugstone/phenotype_comparison.string.human_links_v12_0_min900.Ensembl.diamond.trustrank.csv" "/c/projects/o2t-tools/data/drug_prioritization/drug_prioritization/drugstone/phenotype_comparison.string.human_links_v12_0_min900.Ensembl.domino.trustrank.csv" "/c/projects/o2t-tools/data/drug_prioritization/drug_prioritization/drugstone/phenotype_comparison.string.human_links_v12_0_min900.Ensembl.firstneighbor.trustrank.csv" --out_prefix "/c/projects/o2t-tools/data/drug_prioritization/drug_prioritization/drugstone/results_"
 # --- parse command line arguments ---
 args <- commandArgs(trailingOnly = TRUE)
 
@@ -31,11 +31,11 @@ if (length(input_files) == 0) stop("No input files provided after --input")
 cat("Input files:", paste(input_files, collapse = ", "), "\n")
 cat("Output prefix:", out_prefix, "\n\n")
 
-# --- read & preprocess data ---
+# --- read & preprocess data (TSV input) ---
 read_method <- function(file) {
-  df <- read.csv(file, stringsAsFactors = FALSE) %>%
+  df <- read_tsv(file, col_types = cols(), progress = FALSE) %>%
     rename(score_orig = score) %>%
-    select(drugId, X = X, score = score_orig)
+    select(drugId, X = drugName, score = score_orig)
   df$method <- basename(file)
   return(df)
 }
@@ -52,7 +52,7 @@ combined <- all_data %>%
 
 # --- compute rank-based metrics ---
 score_cols <- setdiff(colnames(combined), c("drugId", "X"))
-max_rank <- nrow(combined)  # используем количество всех препаратов
+max_rank <- nrow(combined)
 
 for (col in score_cols) {
   combined[[paste0(col, "_rank")]] <- rank(-combined[[col]], na.last = "keep", ties.method = "average")
@@ -88,6 +88,6 @@ combined <- combined %>%
   ) %>%
   arrange(desc(consensus_score))
 
-# --- write output ---
+# --- write output CSV ---
 write.csv(combined, paste0(out_prefix, "combined_ranking.csv"), row.names = FALSE)
 cat("Combined ranking written to", paste0(out_prefix, "combined_ranking.csv"), "\n")
