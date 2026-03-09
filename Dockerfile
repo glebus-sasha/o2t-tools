@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libssl-dev \
     libglpk40 \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* 
 
 # --- CRAN пакеты ---
 RUN R -e "install.packages(c('dplyr','stringr','readr','ggplot2','plotly','htmlwidgets','optparse','RobustRankAggreg'), repos='https://cloud.r-project.org')"
