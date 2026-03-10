@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     libglpk-dev \
     dos2unix \
+    pandoc \
     && rm -rf /var/lib/apt/lists/*
 
 # --- CRAN пакеты ---
