@@ -9,7 +9,7 @@ suppressPackageStartupMessages({
 })
 
 # ---- DEBUG / DEV PARAMETERS (uncomment for testing) ----
-if (TRUE) {
+if (FALSE) {
   opt <- list(
     #input = "data/phenotype_comparison_gene_names_added_genes.txt",
     #method = "ORA",
